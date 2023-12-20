@@ -49,9 +49,9 @@ Date ParsingDate(std::istringstream& is) {
             day = part;
     }
     if (month < 1 || month > 12)
-        throw std::runtime_error("Month value is invalid: " + std::to_string(month));
+        throw std::invalid_argument("Month value is invalid: " + std::to_string(month));
     if (day < 1 || day > 31)
-        throw std::runtime_error("Day value is invalid: " + std::to_string(day));
+        throw std::invalid_argument("Day value is invalid: " + std::to_string(day));
     return Date(year, month, day);
 }
 
@@ -75,7 +75,7 @@ public:
   int  DeleteDate(const Date& date)
   {
       int count = m_database[date].size();
-      m_database[date].clear();
+      m_database.erase(date);
       return count;
   }
 
