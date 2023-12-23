@@ -1,0 +1,4 @@
+/home/putin/Documents/c-plus-plus-course/Week12/CMake/build/CMakeFiles/hello_world.dir
+/home/putin/Documents/c-plus-plus-course/Week12/CMake/build/CMakeFiles/main.dir
+/home/putin/Documents/c-plus-plus-course/Week12/CMake/build/CMakeFiles/edit_cache.dir
+/home/putin/Documents/c-plus-plus-course/Week12/CMake/build/CMakeFiles/rebuild_cache.dir

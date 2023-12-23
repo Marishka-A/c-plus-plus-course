@@ -1,0 +1,3 @@
+/home/putin/Documents/c-plus-plus-course/Week13/build/CMakeFiles/main.dir
+/home/putin/Documents/c-plus-plus-course/Week13/build/CMakeFiles/edit_cache.dir
+/home/putin/Documents/c-plus-plus-course/Week13/build/CMakeFiles/rebuild_cache.dir
