@@ -21,31 +21,6 @@ public:
     {
         return m_day;
     }
-
-    static Date ParsingDate(std::istringstream& is) {
-        std::string date;
-        is >> date;
-        std::getline(is, date, ' ');
-        std::istringstream parse_date (date);
-        int year, month, day, part;
-        for (int i = 0; i < date.size(); i++)
-        {
-            parse_date >> part;
-            if ((parse_date.peek() != '-' && i != 2) || (!parse_date.eof() && i == 2))
-                throw std::runtime_error("Wrong date format: " + date);
-            if (i == 0)
-                year = part;
-            else if (i == 1)
-                month = part;
-            else
-                day = part;
-        }
-        if (month < 1 || month > 12)
-            throw std::invalid_argument("Month value is invalid: " + std::to_string(month));
-        if (day < 1 || day > 31)
-            throw std::invalid_argument("Day value is invalid: " + std::to_string(day));
-        return Date(year, month, day);
-    }
 private:
     int m_year, m_month, m_day;
 };
@@ -56,26 +31,52 @@ bool operator<(const Date& lhs, const Date& rhs)
            std::vector<int>{rhs.GetYear(), rhs.GetMonth(), rhs.GetDay()};
 }
 
+Date ParsingDate(std::istringstream& is)
+{
+    std::string date;
+    is >> date;
+    std::istringstream parse_date (date);
+    int year, month, day;
+    char first_sep, second_sep;
+    if (!(parse_date >> year >> first_sep >> month >> second_sep >> day) ||
+    !(first_sep == '-' && second_sep == '-' && parse_date.get() == EOF))
+        throw std::runtime_error("Wrong date format: " + date);
+    if (month < 1 || month > 12)
+        throw std::runtime_error("Month value is invalid: " + std::to_string(month));
+    if (day < 1 || day > 31)
+        throw std::runtime_error("Day value is invalid: " + std::to_string(day));
+    return Date(year, month, day);
+}
+
 class Database
 {
 public:
     void AddEvent(const Date& date, const std::string& event)
     {
-        m_database[date].insert(event);
+        if (m_database.find(date) != m_database.end())
+            m_database[date].insert(event);
+        else
+            m_database[date] = std::set<std::string>{event};
     }
 
-    bool DeleteEvent(const Date& date, const std::string& event)
+    bool DeleteEvent(const Date &date, const std::string &event)
     {
-        if (auto it = m_database.find(date); it != m_database.end())
+        if (auto it_date = m_database.find(date); it_date != m_database.end())
         {
-            return it->second.erase(event) != 0;
+            if (auto it_event = it_date->second.find(event); it_event != it_date->second.end())
+            {
+                if (it_date->second.erase(it_event); it_date->second.empty())
+                    m_database.erase(it_date);
+                return true;
+            }
         }
         return false;
     }
 
-    int DeleteDate(const Date &date){
-        auto it = m_database.find(date);
-        if (it != m_database.end()) {
+    int  DeleteDate(const Date& date)
+    {
+        if (auto it = m_database.find(date); it != m_database.end())
+        {
             int deleteCount = it->second.size();
             m_database.erase(it);
             return deleteCount;
@@ -85,7 +86,11 @@ public:
 
     std::set<std::string> Find(const Date& date)
     {
-        return m_database[date];
+        if (auto it = m_database.find(date); it != m_database.end())
+        {
+            return m_database[date];
+        }
+        return {};
     }
 
     void Print() const
@@ -116,13 +121,13 @@ int main()
         {
             if (command == "Add")
             {
-                Date parse_date = Date::ParsingDate(stream);
+                Date parse_date = ParsingDate(stream);
                 stream >> event;
                 db.AddEvent(parse_date,event);
             }
             else if (command == "Del")
             {
-                Date parse_date = Date::ParsingDate(stream);
+                Date parse_date = ParsingDate(stream);
                 stream >> event;
                 if (event.empty())
                     std::cout << "Deleted " << db.DeleteDate(parse_date) << " events" << std::endl;
@@ -136,7 +141,7 @@ int main()
             }
             else if (command == "Find")
             {
-                Date parse_date = Date::ParsingDate(stream);
+                Date parse_date = ParsingDate(stream);
                 std::set<std::string> events = db.Find(parse_date);
                 for (const auto& event : events)
                     std::cout << event << std::endl;
